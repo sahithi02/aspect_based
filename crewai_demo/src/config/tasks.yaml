@@ -1,0 +1,46 @@
+---
+read_comments_from_file:
+  description: 'Read and extract all political comments from the uploaded file at
+    {file_path}. The file can be CSV, TXT, or Excel exported as CSV. Identify the
+    structure, locate the comments column, and extract all comments for batch processing.
+    Parse the data and prepare it for sentiment analysis of the specified aspects:
+    {aspects}.'
+  expected_output: A structured list of all comments extracted from the file, with
+    row numbers or IDs for reference. Include file structure information (column names,
+    total rows) and a clean list of comments ready for sentiment analysis processing.
+  agent: data_file_reader
+batch_process_sentiment_analysis:
+  description: Perform aspect-based sentiment analysis on all comments for the political
+    entities specified in {aspects}. For each comment, analyze sentiment toward each
+    leader and party separately. Process efficiently in batches and maintain consistency
+    across the dataset. Identify when sentiment differs between leaders and their
+    parties.
+  expected_output: |-
+    For each comment, provide sentiment analysis results in this format:
+    - Comment ID/Row Number
+    - Comment Text (truncated if long)
+    - For each aspect in {aspects}:
+      - Entity Name
+      - Entity Type (Leader/Party)
+      - Sentiment (Positive/Negative/Neutral)
+      - Confidence Score (0-1)
+      - Intensity (Strong/Moderate/Weak)
+      - Supporting Quote from comment
+  agent: batch_sentiment_processor
+  context:
+  - read_comments_from_file
+generate_excel_ready_output:
+  description: Convert the batch sentiment analysis results into Excel-ready format.
+    Create a structured table with clear columns that can be easily imported back
+    into Excel or other spreadsheet applications. Include summary statistics and make
+    the data easy to filter and sort.
+  expected_output: "A CSV-formatted table ready for Excel import with these columns:\n-
+    Row_ID\n- Original_Comment  \n- Entity_Name\n- Entity_Type (Leader/Party)\n- Sentiment\n-
+    Confidence_Score\n- Intensity\n- Supporting_Quote\n\nPlus a summary section with:\n-
+    Total comments processed\n- Sentiment distribution by entity\n- Notable leader
+    vs party sentiment differences\n- File import instructions\n\nFormat the output
+    so users can copy-paste directly into Excel or save as CSV file."
+  agent: excel_output_generator
+  context:
+  - read_comments_from_file
+  - batch_process_sentiment_analysis
